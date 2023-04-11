@@ -9,7 +9,11 @@
 #include<errno.h>
 
 int get_temperature(float *temp);
+struct timeval tv_begin;
 
+gettimeofday(&tv_begin,NULL);
+long long time_over = (long long)tv_begin.tv_sec*1000000 + tv_begin.tv_usec;
+printf("time is: %lld\n",time_over);
 
 int main(int argc,char *argv[])
 {
