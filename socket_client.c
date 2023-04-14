@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <getopt.h>
+#include <time.h>
 
 #define MSG_STR "Hello Ling iot studio\n"
 
@@ -18,29 +19,32 @@ static inline void print_usage(char *progname)
 	printf("%s usage: \n", progname);
 	printf("-i[ipaddr ]: sepcify server IP address\n");
 	printf("-p[port   ]: sepcify server port.\n");
-	printf("-h[hlp    ]: print this help informstion.\n");
+	printf("-t[time   ]: sepcify the time to send.\n");
+	printf("-h[help    ]: print this help informstion.\n");
 	return ;
 }
+
+
 int main(int argc, char **argv)
 {
 	int                 sockfd = -1;
 	int                 rv = -1;
 	struct sockaddr_in  servaddr;
-	char                *servip = NULL;
+	char               *servip = NULL;
 	int                 port = 0;
+	int                 time = 1;
 	char                buf[1024];
 	struct option       opts[] = {
 		{"ipaddr", required_argument, NULL, 'i'},
 		{"port", required_argument, NULL, 'p'},
+		{"time", required_argument, NULL, 't'},
 		{"help", no_argument, NULL, 'h'},
 		{NULL, 0, NULL, 0}
 	};
 	int       ch;
 	int       idx;
-	
 
-	while((ch=getopt_long(argc, argv,"i:p:h",opts, &idx)) != -1)
-	
+	while((ch=getopt_long(argc, argv, "i:p:t:h", opts, &idx)) != -1)
 	{
 		switch(ch)
 		{
@@ -50,21 +54,26 @@ int main(int argc, char **argv)
 			case 'p':
 				port=atoi(optarg);
 				break;
+			case 't':
+				time=atoi(optarg);
+				break;
 			case 'h':
 				print_usage(argv[0]);
 				return 0;
 		}
 	}
-	        if( argc < 3)
-		{
+	    if( argc < 3)
+	    {
 		
-			printf("Program usage: %s [ServerIP] [Port]\n",argv[0]);
+			printf("Program usage: %s [ServerIP] [Port] [Time]\n",argv[0]);
 			return 0;
 		}
+		printf("time:%d\n",time);
 
 		servip=argv[1];
 		port = atoi(argv[2]);
-
+		//time = atoi(argv[3]);
+		printf("time1:%d\n",time);
 
 		sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	
@@ -82,6 +91,7 @@ int main(int argc, char **argv)
 		inet_aton(servip, &servaddr.sin_addr);
 
 		rv = connect(sockfd, (struct sockaddr *)&servaddr, sizeof(servaddr));
+		
 		if(rv < 0)
 		{
 		
@@ -90,6 +100,7 @@ int main(int argc, char **argv)
 			return -2;
 		}
 		printf("Connect to server[%s:%d] successfully!\n", servip, port);
+
 		while(1)
 		{
 			rv=write(sockfd, MSG_STR, strlen(MSG_STR));
@@ -116,10 +127,11 @@ int main(int argc, char **argv)
 			{
 			
 				printf("Read %d bytes data from Server: %s\n",rv, buf);
-				sleep(1);
+				printf("time2:%d\n",time);
+				sleep(time);
 			}
 		}
 
 		close(sockfd);
-	
+	    return 0;
 }
