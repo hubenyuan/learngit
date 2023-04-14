@@ -72,8 +72,6 @@ int main(int argc, char **argv)
 
 		servip=argv[1];
 		port = atoi(argv[2]);
-		//time = atoi(argv[3]);
-		printf("time1:%d\n",time);
 
 		sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	
@@ -127,7 +125,6 @@ int main(int argc, char **argv)
 			{
 			
 				printf("Read %d bytes data from Server: %s\n",rv, buf);
-				printf("time2:%d\n",time);
 				sleep(time);
 			}
 		}
