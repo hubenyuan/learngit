@@ -8,6 +8,7 @@
 #include<stdlib.h>
 #include<errno.h>
 #include <time.h>
+#include <errno.h> 
 
 
 int get_temperature(float *temp);
@@ -25,22 +26,37 @@ struct t
 int main(int argc, char **argv)
 {
 
-	time_t       now;
-	float        temp;
-    int          rv;
-	struct tm   *t;
+	time_t          now;
+	float           temp;
+    int             rv;
+	struct tm      *t;
+	DIR            *dirptr;
+	struct dirent  *entry;
+
 	time(&now);
 	t = localtime(&now);
     rv=get_temperature(&temp);
+	dirptr = opendir("../w1/device/");
         
+	while( (entry = readdir(dirptr)) != NULL )
+	{
+		if(strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0 )
+		{
+			printf("%s/", entry->d_name);
+		}
+	}
+	closedir(dirptr);
+
 	if(rv<0)
 	{
 		printf("get temperature failure,return value:%d\n",rv);
         return -1;
     }
-	printf("%f/",temp);
 	printf("%d;%d;%d,",t->tm_year+1900,t->tm_mon+1,t->tm_mday);
-	printf("%d:%d:%d\n",t->tm_hour,t->tm_min,t->tm_sec);
+	printf("%d:%d:%d/",t->tm_hour,t->tm_min,t->tm_sec);
+	printf("%f\n",temp);
+
+	return 0;
 
 }
 
