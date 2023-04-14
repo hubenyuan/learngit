@@ -17,7 +17,7 @@ struct t
 {
 	int tm_sec;               // 秒 – 取值区间为[0,59]  　　
 	int tm_min;              // 分 - 取值区间为[0,59]  　　
-    int tm_hour;            // 时 - 取值区间为[0,23]  　
+	int tm_hour;            // 时 - 取值区间为[0,23]  　
 	int tm_mday;           // 一个月中的某日 - 取值区间为[1,31] 
 	int tm_mon;           // 月份 - 取值区间为[0,11]，（0为一月）
 	int tm_year;         // 年份 　
@@ -28,7 +28,7 @@ int main(int argc, char **argv)
 
 	time_t          now;
 	float           temp;
-    int             rv;
+	int             rv;
 	struct tm      *t;
 	DIR            *dirptr;
 	struct dirent  *entry;
@@ -72,7 +72,7 @@ int get_temperature(float *temp)
     char             chip_sn[32];
     int              found=0;
     char             ds18b20_path[64];
-      /*char    w1_path[64]="/sys/bus/w1/devices/";*/    
+    /*char    w1_path[64]="/sys/bus/w1/devices/";*/    
 	dirp=opendir(w1_path);
         
 	if(!dirp)
