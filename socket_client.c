@@ -1,29 +1,9 @@
 
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <stdio.h>
-#include <errno.h>
-#include <string.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <getopt.h>
-#include <time.h>
+
+#include "socket_client.h"
+#include "ds18b20.h"
 
 #define MSG_STR "Hello Ling iot studio\n"
-
-static inline void print_usage(char *progname);
-
-static inline void print_usage(char *progname)
-{
-	printf("%s usage: \n", progname);
-	printf("-i[ipaddr ]: sepcify server IP address\n");
-	printf("-p[port   ]: sepcify server port.\n");
-	printf("-t[time   ]: sepcify the time to send.\n");
-	printf("-h[help    ]: print this help informstion.\n");
-	return ;
-}
-
 
 int main(int argc, char **argv)
 {
@@ -32,17 +12,59 @@ int main(int argc, char **argv)
 	struct sockaddr_in  servaddr;
 	char               *servip = NULL;
 	int                 port = 0;
-	int                 time = 1;
+	int                 times = 1;
 	char                buf[1024];
+	int                 ch;
+	int                 idx;
+	int                 founds = 0;
+	time_t              now;
+	float               temp;
+	int                 tv;
+	struct tm          *t;
+	DIR                *dirptr;
+	struct dirent      *entry;
+	time(&now);
+	t = localtime(&now);
+	tv = get_temperature(&temp);
+	dirptr = opendir("../w1/device/");
+
 	struct option       opts[] = {
 		{"ipaddr", required_argument, NULL, 'i'},
 		{"port", required_argument, NULL, 'p'},
-		{"time", required_argument, NULL, 't'},
+		{"times", required_argument, NULL, 't'},
 		{"help", no_argument, NULL, 'h'},
 		{NULL, 0, NULL, 0}
 	};
-	int       ch;
-	int       idx;
+
+	if( (entry = readdir(dirptr)) == NULL )
+	{
+		printf("open file failure: %s\n",strerror(errno));
+		return -1;
+	}
+	while( (entry = readdir(dirptr)) != NULL )
+	{
+		if(strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0 && strstr(entry->d_name,"28-") )
+		{
+			printf("%s/", entry->d_name);
+			founds = 1;
+		}
+	}
+	closedir(dirptr);
+
+	if( !founds )
+	{
+		printf("can not find ds18b20_path chipest\n");
+		return -2;
+	}
+
+	if(tv<0)
+	{
+		printf("get temperature failure,return value:%d\n",tv);
+		return -1;
+	}
+	printf("%d;%d;%d,",t->tm_year+1900,t->tm_mon+1,t->tm_mday);
+	printf("%d:%d:%d/",t->tm_hour,t->tm_min,t->tm_sec);
+	printf("%f\n",temp);
 
 	while((ch=getopt_long(argc, argv, "i:p:t:h", opts, &idx)) != -1)
 	{
@@ -55,7 +77,7 @@ int main(int argc, char **argv)
 				port=atoi(optarg);
 				break;
 			case 't':
-				time=atoi(optarg);
+				times=atoi(optarg);
 				break;
 			case 'h':
 				print_usage(argv[0]);
@@ -68,7 +90,7 @@ int main(int argc, char **argv)
 			printf("Program usage: %s [ServerIP] [Port] [Time]\n",argv[0]);
 			return 0;
 		}
-		printf("time:%d\n",time);
+		printf("time:%d\n",times);
 
 		servip=argv[1];
 		port = atoi(argv[2]);
@@ -125,7 +147,7 @@ int main(int argc, char **argv)
 			{
 			
 				printf("Read %d bytes data from Server: %s\n",rv, buf);
-				sleep(time);
+				sleep(times);
 			}
 		}
 
