@@ -141,6 +141,7 @@ int main(int argc, char **argv)
 		}
 		else
 		{
+			memset(buf, 0, sizeof(buf));
 			for(i=0; i<ARRAY_SIZE(fds_array); i++)
 			{
 				if( fds_array[i]<0 || !FD_ISSET(fds_array[i], &rdset))
