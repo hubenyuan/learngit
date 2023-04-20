@@ -1,7 +1,12 @@
 
 
+/*
+#include <sqlite3.h>
+#define  table_name "cli_temp"
+*/
 #include "socket_client.h"
-#include "ds18b20.h"
+#include "package_data.h"
+
 
 int main(int argc, char **argv)
 {
@@ -12,20 +17,13 @@ int main(int argc, char **argv)
 	int                 port = 0;
 	int                 times = 3;
 	char                buf[1024];
-	char                buffer[512];
+	char                data_buff[1024];
 	int                 ch;
 	int                 idx;
 	int                 founds = 0;
-	time_t              now;
-	float               temp;
-	int                 tv;
-	struct tm          *t;
-	DIR                *dirptr;
-	struct dirent      *entry;
-	time(&now);
-	t = localtime(&now);
-	tv = get_temperature(&temp);
-	dirptr = opendir("../w1/device/");
+	char                time_buf[64];
+	char                serial_buf[64];
+	char                temp_buf[64];
 
 	struct option       opts[] = {
 		{"ipaddr", required_argument, NULL, 'i'},
@@ -34,34 +32,6 @@ int main(int argc, char **argv)
 		{"help", no_argument, NULL, 'h'},
 		{NULL, 0, NULL, 0}
 	};
-
-	if( (entry = readdir(dirptr)) == NULL )
-	{
-		printf("open file failure: %s\n",strerror(errno));
-		return -1;
-	}
-	while( (entry = readdir(dirptr)) != NULL )
-	{
-		if(strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0 && strstr(entry->d_name,"28-") )
-		{
-			memset(buffer, 0 , sizeof(buffer));
-			sprintf(buffer, "%s/%d-%d-%d %d:%d:%d/%f/\n", entry->d_name, t->tm_year+1900,t->tm_mon+1,t->tm_mday,t->tm_hour,t->tm_min,t->tm_sec, temp);
-			founds = 1;
-		}
-	}
-
-	if( !founds )
-	{
-		printf("can not find ds18b20_path chipest\n");
-		return -2;
-	}
-
-	if(tv<0)
-	{
-		printf("get temperature failure,return value:%d\n",tv);
-		return -1;
-	}
-	closedir(dirptr);
 
 	while((ch=getopt_long(argc, argv, "i:p:t:h", opts, &idx)) != -1)
 	{
@@ -117,8 +87,17 @@ int main(int argc, char **argv)
 
 		while(1)
 		{
+			/*获取当前时间*/
+			get_time(time_buf);
+			/*获取温度*/
+			get_temporary(temp_buf);
+			/*获取产品序列号*/
+			get_serial(serial_buf);
+			/*把三个数据打包到一起*/
+			sprintf(data_buff,"%s/%s/%s", time_buf,serial_buf,temp_buf);
+
 			sleep(times);
-			rv=write(sockfd, buffer, strlen(buffer));
+			rv=write(sockfd, data_buff, strlen(data_buff));
 			if(rv < 0 )
 			{
 				printf("write to server by socket[%d] failure: %s\n",sockfd,strerror(errno));
@@ -143,6 +122,6 @@ int main(int argc, char **argv)
 			}
 		}
 	}
-		close(sockfd);
-	    return 0;
+	close(sockfd);
+	return 0;
 }
