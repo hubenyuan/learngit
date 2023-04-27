@@ -12,6 +12,7 @@
 #include <libgen.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include "server_sqlite3.h"
 
 #define ARRAY_SIZE(x)     (sizeof(x)/sizeof(x[0]))
 
@@ -31,7 +32,7 @@ int main(int argc, char **argv)
 	int                       i, j;
 	int                       found;
 	int                       maxfd = 0;
-	char                      buf[1024];
+	char                      buf[512];
 	int                       fds_array[1024];
 
 	struct option         long_options[]=
@@ -68,6 +69,15 @@ int main(int argc, char **argv)
 		print_usage(progname);
 		return -1;
 	}
+
+	/* 创建连接数据库并且创建名为server_data的表 */
+	get_sqlite_create_db();
+
+	/* 删除数据库里面表的所有数据 */
+	//sqlite_delete_data();
+	
+	/* 打印出数据库表里面的数据 */
+	sqlite_select_data();
 
 	if( (listenfd=socket_server_init( NULL, serv_port)) < 0 )
 	{
@@ -154,8 +164,11 @@ int main(int argc, char **argv)
 				}
 				else
 				{
+
 					printf("socket[%d] read get %d bytes data: %s\n", fds_array[i], rv, buf);
 
+					/* 向数据库表里面插入数据 */
+					sqlite_insert_data(buf);
 					for(j=0; j<rv; j++)
 						buf[j]=toupper(buf[j]);
 					if( write(fds_array[i], buf, rv) < 0 )
@@ -171,6 +184,7 @@ int main(int argc, char **argv)
 
 CleanUp:
 	close(listenfd);
+	sqlite_close_db();
 	return 0;
 }
 
