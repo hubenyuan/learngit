@@ -1,12 +1,6 @@
-
-
-/*
-#include <sqlite3.h>
-#define  table_name "cli_temp"
-*/
 #include "socket_client.h"
 #include "package_data.h"
-
+#include "my_sqlite3.h"
 
 int main(int argc, char **argv)
 {
@@ -16,14 +10,16 @@ int main(int argc, char **argv)
 	char               *servip = NULL;
 	int                 port = 0;
 	int                 times = 3;
-	char                buf[1024];
-	char                data_buff[1024];
+	char                buf[512];
+	char                data_buff[512];
 	int                 ch;
+	int                 maxid;
 	int                 idx;
 	int                 founds = 0;
 	char                time_buf[64];
 	char                serial_buf[64];
 	char                temp_buf[64];
+	char                send_buf[128];
 
 	struct option       opts[] = {
 		{"ipaddr", required_argument, NULL, 'i'},
@@ -60,6 +56,8 @@ int main(int argc, char **argv)
 	servip=argv[1];
 	port = atoi(argv[2]);
 
+	/*创建连接数据库和并且创建名为packaged_data的表*/
+	get_sqlite_create_db();
 	while(1)
 	{
 		sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -80,21 +78,55 @@ int main(int argc, char **argv)
 		if(rv < 0)
 		{
 			printf("Connect to server[%s:%d] failure: %s\n",servip, port, strerror(errno));
+            /* 获取当前时间 */
+			get_time(time_buf);
+			/* 获取温度 */ 
+			get_temporary(temp_buf);
+			/* 获取产品序列号 */
+			get_serial(serial_buf);
+
+		    sqlite_insert_data(time_buf, serial_buf, temp_buf);
 			sleep(5);
 			continue;
 		}
 		printf("Connect to server[%s:%d] successfully!\n", servip, port);
 
+
 		while(1)
 		{
-			/*获取当前时间*/
+			while(1)
+			{
+			/* 获取数据库数据最大ID并且判断数据库里面存不存在数据*/
+			sqlite_maxid( &maxid );
+			/*  maxid > 0表示有数据 */
+			if(maxid > 0)
+			{
+			   	memset(send_buf, 0, sizeof(send_buf));
+				memset(data_buff, 0, sizeof(data_buff));
+				/* 获取数据库表里面的数据并且发送到服务器 */
+				sqlite_select_data(send_buf);
+				sprintf(data_buff,"%s\n",send_buf);
+				rv=write(sockfd, data_buff, strlen(data_buff));
+				/*  删除数据库表里面ID最大的数据  */
+				sqlite_delete_data();
+				continue;
+			}
+			else
+			{
+				break;
+			}
+			}
+
+		
+			/* 获取当前时间*/ 
 			get_time(time_buf);
-			/*获取温度*/
+			/* 获取温度*/
 			get_temporary(temp_buf);
-			/*获取产品序列号*/
+			/* 获取产品序列号 */
 			get_serial(serial_buf);
-			/*把三个数据打包到一起*/
-			sprintf(data_buff,"%s/%s/%s", time_buf,serial_buf,temp_buf);
+
+			memset(data_buff,0,sizeof(data_buff));
+			sprintf(data_buff,"%s/%s/%s\n",time_buf,serial_buf,temp_buf);
 
 			sleep(times);
 			rv=write(sockfd, data_buff, strlen(data_buff));
@@ -103,9 +135,9 @@ int main(int argc, char **argv)
 				printf("write to server by socket[%d] failure: %s\n",sockfd,strerror(errno));
 				break;
 			}
+
 			memset(buf, 0, sizeof(buf));
-			rv=read(sockfd, buf, sizeof(buf));
-				
+			rv=read(sockfd, buf, sizeof(buf));	
 			if(rv < 0 )
 			{
 				printf("Read data from server by sockfd[%d] failure: %s\n",sockfd, strerror(errno));
@@ -118,10 +150,12 @@ int main(int argc, char **argv)
 			}
 			else if( rv > 0 )
 			{	
-				printf("Read %d bytes data from Server: %s\n",rv, buf);
+				printf("Read %d bytes data from Server.\n",rv);
 			}
 		}
 	}
+
+	sqlite_close_db();
 	close(sockfd);
 	return 0;
 }
