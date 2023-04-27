@@ -152,7 +152,7 @@ int sqlite_select_data(char *send_buf)
 		sqlite3_free(zErrMsg);
 		return -1;
 	}
-	sprintf(send_buf,"%s/%s/%s\n",result[1*colnum+1],result[1*colnum+2],result[1*colnum+3]);
+	sprintf(send_buf,"%s/%s/%s",result[1*colnum+1],result[1*colnum+2],result[1*colnum+3]);
 
 	return 0;
 }
@@ -165,7 +165,7 @@ int sqlite_delete_data()
 	char          delete_buf[128];
 	
 	memset(delete_buf,0,sizeof(delete_buf));
-	sprintf(delete_buf,"DELETE FROM %s WHERE ID=(SELECT MAX(ID) FROM %s);SELECT * FROM %s;",list_name,list_name,list_name);
+	sprintf(delete_buf,"DELETE FROM %s WHERE ID=(SELECT MAX(ID) FROM %s);",list_name,list_name);
 
     rc = sqlite3_exec(db, delete_buf, callback, 0, &zErrMsg);
 
