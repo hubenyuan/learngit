@@ -1,6 +1,27 @@
-#include "socket_client.h"
+
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <stdio.h>
+#include <errno.h>
+#include <string.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <getopt.h>
+#include <time.h>
+
 #include "package_data.h"
 #include "my_sqlite3.h"
+
+static inline void print_usage(char *progname)
+{
+    printf("%s usage: \n", progname);
+    printf("-i[ipaddr ]: sepcify server IP address\n");
+    printf("-p[port   ]: sepcify server port.\n");
+    printf("-t[times  ]: sepcify the time to send.\n");
+    printf("-h[help   ]: print this help informstion.\n");
+    return ;
+}
 
 int main(int argc, char **argv)
 {
@@ -91,33 +112,24 @@ int main(int argc, char **argv)
 		}
 		printf("Connect to server[%s:%d] successfully!\n", servip, port);
 
+		/*  获取数据库数据最大ID并且判断数据库里面存不存在数据 */
+		sqlite_maxid( &maxid );
+		/*  maxid > 0表示有数据 */
+		if(maxid>0)
+		{
+			memset(send_buf, 0, sizeof(send_buf));
+			memset(data_buff, 0, sizeof(data_buff));
+			/* 获取数据库表里面的数据并且发送到服务器 */
+			sqlite_select_data(send_buf);
+			sprintf(data_buff,"%s\n",send_buf);
+			rv=write(sockfd, data_buff, strlen(data_buff));
+			/* 删除数据库表里面ID最大的数据  */
+			sqlite_delete_data();
+			continue;
+		}
 
 		while(1)
 		{
-			while(1)
-			{
-			/* 获取数据库数据最大ID并且判断数据库里面存不存在数据*/
-			sqlite_maxid( &maxid );
-			/*  maxid > 0表示有数据 */
-			if(maxid > 0)
-			{
-			   	memset(send_buf, 0, sizeof(send_buf));
-				memset(data_buff, 0, sizeof(data_buff));
-				/* 获取数据库表里面的数据并且发送到服务器 */
-				sqlite_select_data(send_buf);
-				sprintf(data_buff,"%s\n",send_buf);
-				rv=write(sockfd, data_buff, strlen(data_buff));
-				/*  删除数据库表里面ID最大的数据  */
-				sqlite_delete_data();
-				continue;
-			}
-			else
-			{
-				break;
-			}
-			}
-
-		
 			/* 获取当前时间*/ 
 			get_time(time_buf);
 			/* 获取温度*/
