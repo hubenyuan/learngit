@@ -1,3 +1,15 @@
+/*********************************************************************************
+ *      Copyright:  (C) 2023 Hu Ben Yuan<2017603273@qq.com>
+ *                  All rights reserved.
+ *
+ *       Filename:  o.c
+ *    Description:  This file 
+ *                 
+ *        Version:  1.0.0(04/29/2023)
+ *         Author:  Hu Ben Yuan <2017603273@qq.com>
+ *      ChangeLog:  1, Release initial version on "04/29/2023 12:20:46 PM"
+ *                 
+ ********************************************************************************/
 #include <stdio.h>
 #include <sys/socket.h>
 #include <sys/time.h>
