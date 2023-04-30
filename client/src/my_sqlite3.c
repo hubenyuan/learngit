@@ -93,7 +93,6 @@ int sqlite_insert_data(char *time_buf, char *serial_buf, char *temp_buf)
 		return -1;
 	}
 
-	//printf("%s\n",insert_buf);
 	log_info("Insert  data successfully\n");
 	return 0;
 }
