@@ -1,4 +1,5 @@
-APPNAME = serv
+
+APPNAME = temp_serv
 LIBPATH1 = `pwd`/include/
 LIBPATH2 = `pwd`/lib/
 
