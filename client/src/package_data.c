@@ -22,6 +22,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+#include "logger.h"
+
 struct t 
 {
 	int tm_sec;              // 秒 – 取值区间为[0,59]  　　
@@ -47,7 +49,7 @@ int get_temperature(float *temp)
         
     if(!dirp)
     {
-        printf("open folder %s failure: %s\n",w1_path,strerror(errno));
+        log_error("open folder %s failure: %s\n",w1_path,strerror(errno));
         return -1;
     }
         
@@ -64,7 +66,7 @@ int get_temperature(float *temp)
 
     if(!found)
     {
-        printf("can not find ds18b20_path chipest\n");
+        log_error("can not find ds18b20_path chipest\n");
         return -2;
     }
     strncat(w1_path,chip_sn,sizeof(w1_path)-strlen(w1_path));
@@ -73,7 +75,7 @@ int get_temperature(float *temp)
         
     if(fd<0)
     {
-        printf("open file failure:%s\n",strerror(errno));
+        log_warn("open file failure:%s\n",strerror(errno));
         perror("open file failure\n");
         return -3;
     }
@@ -82,14 +84,14 @@ int get_temperature(float *temp)
 
     if(read(fd,buf,sizeof(buf))<0)
     {
-        printf("read data from fd=%d failure: %s\n",fd,strerror(errno));
+        log_warn("read data from fd=%d failure: %s\n",fd,strerror(errno));
         return -4;
     }
     ptr=strstr(buf,"t=");
         
         if(!ptr)
     {
-        printf("can not find t=string\n");
+        log_warn("can not find t=string\n");
         return -5;
     }
         
@@ -109,7 +111,7 @@ int get_time(char *time_buf)
 	t = localtime(&now);
 	if(!t)
 	{
-		printf("failure: %s\n",strerror(errno));
+		log_warn("failure: %s\n",strerror(errno));
 		return -1;
 	}
 
@@ -131,7 +133,7 @@ int get_serial(char *serial_buf)
 	memset(serial_buf, 0, sizeof(serial_buf));
 	if( (entry = readdir(dirptr)) == NULL )
     {
-        printf("open file failure: %s\n",strerror(errno));
+        log_warn("open file failure: %s\n",strerror(errno));
                 return -1;
     }
 
@@ -146,7 +148,7 @@ int get_serial(char *serial_buf)
     }
     if( !founds )
     {
-        printf("can not find ds18b20_path chipest\n");
+        log_error("can not find ds18b20_path chipest\n");
         return -2;
     }
 	closedir(dirptr);
@@ -162,7 +164,7 @@ int get_temporary(char *temp_buf)
     memset(temp_buf, 0, sizeof(temp_buf));
 	if(rs<0)
     {
-		printf("get temperature failure,return value:%d",rs);
+		log_warn("get temperature failure,return value:%d",rs);
         return -1;
     }
 	sprintf(temp_buf,"%f",temp);

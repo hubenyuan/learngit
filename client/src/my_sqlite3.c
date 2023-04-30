@@ -17,6 +17,8 @@
 #include <stdlib.h>
 #define  list_name "packaged_data"
 
+#include "logger.h"
+
 sqlite3     *db;
 
 static int callback(void *NotUsed, int argc, char **argv, char **azColName)
@@ -24,9 +26,9 @@ static int callback(void *NotUsed, int argc, char **argv, char **azColName)
 	int    i;
     for(i=0; i<argc; i++)
     {
-        printf ("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
+        log_info("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
     }
-    printf ("\n");
+    log_info ("\n");
     return 0;
 }
 
@@ -43,12 +45,12 @@ int get_sqlite_create_db()
 
     if( rc )
     {
-    	printf("Can't open database: %s\n", strerror(errno));
+    	log_warn("Can't open database: %s\n", strerror(errno));
         return -1;
     }
     else
     {
-        printf("Opened database successfully.\n");
+        log_info("Opened database successfully.\n");
     }
 
 	memset(create_buf,0,sizeof(create_buf));
@@ -57,13 +59,13 @@ int get_sqlite_create_db()
 
 	if( rc != SQLITE_OK )
     {
-        printf("failure to create %s: %s\n",list_name,zErrMsg);
+        log_warn("failure to create %s: %s\n",list_name,zErrMsg);
         sqlite3_free(zErrMsg);
         return -1;
     }
     else
     {
-        printf("create %s successfully\n",list_name);
+        log_info("create %s successfully\n",list_name);
     }
 
     return 0;
@@ -86,13 +88,13 @@ int sqlite_insert_data(char *time_buf, char *serial_buf, char *temp_buf)
 	if(rc != SQLITE_OK)
 	{
 		
-		printf("insert data failure: %s\n",zErrMsg);
+		log_warn("insert data failure: %s\n",zErrMsg);
 		sqlite3_free(zErrMsg);
 		return -1;
 	}
 
 	//printf("%s\n",insert_buf);
-	printf ("Insert  data successfully\n");
+	log_info("Insert  data successfully\n");
 	return 0;
 }
 
@@ -114,14 +116,14 @@ int sqlite_maxid(int * maxid)
 
 	if(rc != SQLITE_OK)
 	{
-		printf("query records count from database failure: %s\n",zErrMsg);
+		log_warn("query records count from database failure: %s\n",zErrMsg);
 		sqlite3_free(zErrMsg);
 		return -1;
 	}
 
 	if( rownum <= 0)
 	{
-		printf("Obtaining maxid failure: %s\n",zErrMsg);
+		log_warn("Obtaining maxid failure: %s\n",zErrMsg);
 		sqlite3_free(zErrMsg);
 		return -2;
 	}
@@ -148,7 +150,7 @@ int sqlite_select_data(char *send_buf)
 	rc = sqlite3_get_table(db, select_buf, &result, &rownum, &colnum, &zErrMsg);
 	if(rc != SQLITE_OK)
 	{
-		printf("Obtaining data failure: %s\n",zErrMsg);
+		log_warn("Obtaining data failure: %s\n",zErrMsg);
 		sqlite3_free(zErrMsg);
 		return -1;
 	}
@@ -171,11 +173,11 @@ int sqlite_delete_data()
 
 	if( rc != SQLITE_OK )
 	{
-		printf ("delete packaged_data failure: %s\n",zErrMsg);
+		log_warn("delete packaged_data failure: %s\n",zErrMsg);
 		sqlite3_free(zErrMsg);
 		return -1;
 	}
-	printf ("delete packaged_data successfully\n");
+	log_info ("delete packaged_data successfully\n");
 	return 0;
 }
 
@@ -187,10 +189,10 @@ int sqlite_close_db(void)
 	rc = sqlite3_close(db);
 	if(rc != SQLITE_OK)
 	{
-		printf("close database failure: %s\n",zErrMsg);
+		log_warn("close database failure: %s\n",zErrMsg);
 		sqlite3_free(zErrMsg);
 		return -1;
 	}
-	printf("close database successfully\n");
+	log_info("close database successfully\n");
 	return 0;
 }

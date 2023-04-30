@@ -1,4 +1,5 @@
-APPNAME = test
+
+APPNAME  = temp_cli
 LIBPATH1 = `pwd`/include/
 LIBPATH2 = `pwd`/lib/
 
@@ -9,7 +10,7 @@ CC = gcc
 
 all:
 	make -C src
-	${CC} ${CFLAGS} socket_client.c -o ${APPNAME} ${LDFLAGS} -lpackage_data -lmy_sqlite3 -l sqlite3
+	${CC} ${CFLAGS} socket_client.c -o ${APPNAME} ${LDFLAGS} -llogger -lpackage_data -lmy_sqlite3 -l sqlite3
 
 clean:
 	rm -f ${APPNAME}
