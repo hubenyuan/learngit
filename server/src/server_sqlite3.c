@@ -17,16 +17,19 @@
 #include <stdlib.h>
 #define  list_name "server_data"
 
+#include "logger.h"
+
 sqlite3     *db;
 
 static int callback(void *NotUsed, int argc, char **argv, char **azColName)
 {
 	int    i;
-    for(i=0; i<argc; i++)
+    
+	for(i=0; i<argc; i++)
     {
-        printf ("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
+        log_info("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
     }
-    printf ("\n");
+    log_info("\n");
     return 0;
 }
 
@@ -37,18 +40,17 @@ int get_sqlite_create_db()
     char              create_buf[128];
     char             *zErrMsg;
     int               rc;
-	char              *sql;
 
     rc = sqlite3_open("server.db", &db);
 
     if( rc )
     {
-    	printf("Can't open database: %s\n", strerror(errno));
+    	log_warn("Can't open database: %s\n", strerror(errno));
         return -1;
     }
     else
     {
-        printf("Opened database successfully.\n");
+        log_info("Opened database successfully.\n");
     }
 
 	memset(create_buf,0,sizeof(create_buf));
@@ -57,13 +59,13 @@ int get_sqlite_create_db()
 
 	if( rc != SQLITE_OK )
     {
-        printf("failure to create %s: %s\n",list_name,zErrMsg);
+        log_warn("failure to create %s: %s\n",list_name,zErrMsg);
         sqlite3_free(zErrMsg);
         return -1;
     }
     else
     {
-        printf("create %s successfully\n",list_name);
+        log_info("create %s successfully\n",list_name);
     }
 
     return 0;
@@ -89,59 +91,25 @@ int sqlite_insert_data(char *buf)
 	if(rc != SQLITE_OK)
 	{
 		
-		printf("insert data failure: %s\n",zErrMsg);
+		log_warn("insert data failure: %s\n",zErrMsg);
 		sqlite3_free(zErrMsg);
 		return -1;
 	}
 
-	printf ("Insert  data successfully\n");
+	log_info("Insert  data successfully\n");
 	return 0;
 }
-
-/*获取数据库数据最大ID并且判断数据库里面存不存在数据*/
-int sqlite_maxid(int * maxid)
-{
-	char     *zErrMsg;
-	char    **result;
-	int       rownum;
-	int       colnum;
-	int       rc;
-	char     *p;
-	char      maxid_buf[128];
-	
-
-	memset(maxid_buf,0,sizeof(maxid_buf));
-	sprintf(maxid_buf,"SELECT count(*) from %s",list_name);
-	rc = sqlite3_get_table(db, maxid_buf, &result, &rownum, &colnum, &zErrMsg);
-
-	if(rc != SQLITE_OK)
-	{
-		printf("query records count from database failure: %s\n",zErrMsg);
-		sqlite3_free(zErrMsg);
-		return -1;
-	}
-
-	if( rownum <= 0)
-	{
-		printf("Obtaining maxid failure: %s\n",zErrMsg);
-		sqlite3_free(zErrMsg);
-		return -2;
-	}
-	*maxid = atoi(result[1*colnum]);
-	return 0;
-}
-
 
 /* 获取数据库表里面的数据并且打印出来 */ 
 int sqlite_select_data(void)
 {
 	char            select_buf[128];
-	char           *zErrMsg;
 	int             rc;
+	int             colnum;
 	int             counts;
 	int             rownum;
-	int       		colnum;
-	char    	  **result;
+	char           *zErrMsg;
+	char	      **result;
 
 	memset(select_buf,0,sizeof(select_buf));
 
@@ -150,7 +118,7 @@ int sqlite_select_data(void)
 	rc = sqlite3_exec(db, select_buf, callback, NULL, &zErrMsg);
 	if(rc != SQLITE_OK)
 	{
-		printf("select  data failure: %s\n",zErrMsg);
+		log_warn("select  data failure: %s\n",zErrMsg);
 		sqlite3_free(zErrMsg);
 		return -1;
 	}
@@ -167,16 +135,15 @@ int sqlite_delete_data(void)
 	
 	memset(delete_buf,0,sizeof(delete_buf));
 	sprintf(delete_buf,"DELETE FROM %s;",list_name);
-
-    rc = sqlite3_exec(db, delete_buf, callback, 0, &zErrMsg);
+	rc = sqlite3_exec(db, delete_buf, callback, 0, &zErrMsg);
 
 	if( rc != SQLITE_OK )
 	{
-		printf ("delete server_data failure: %s\n",zErrMsg);
+		log_warn("delete server_data failure: %s\n",zErrMsg);
 		sqlite3_free(zErrMsg);
 		return -1;
 	}
-	printf ("delete packaged_data successfully\n");
+	log_info("delete packaged_data successfully\n");
 	return 0;
 }
 
@@ -188,10 +155,10 @@ int sqlite_close_db(void)
 	rc = sqlite3_close(db);
 	if(rc != SQLITE_OK)
 	{
-		printf("close database failure: %s\n",zErrMsg);
+		log_warn("close database failure: %s\n",zErrMsg);
 		sqlite3_free(zErrMsg);
 		return -1;
 	}
-	printf("close database successfully\n");
+	log_info("close database successfully\n");
 	return 0;
 }

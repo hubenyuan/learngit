@@ -3,20 +3,22 @@
 PREFIX = `pwd`/../
 
 
-LIBNAME = server_sqlite3
+LIBNAME1 = server_sqlite3
+LIBNAME2 = logger
 
 all: static_lib
 
 static_lib:
 	@gcc -c *.c
-	ar -rcs lib${LIBNAME}.a *.o
+	ar -rcs lib${LIBNAME1}.a *.o
+	ar -rcs lib${LIBNAME2}.a *.o
 
 
 clean:
 	rm -f *.o
 
 distclean:clean
-	rm -f *.so *.a
+	rm -f *.a
 
 install:
 	mkdir -p ${PREFIX}/lib
@@ -25,5 +27,6 @@ install:
 	cp *.h ${PREFIX}/include
 
 uninstall:
-	rm -f ${PREFIX}/lib/lib${LIBNAME}.*
+	rm -f ${PREFIX}/lib/lib${LIBNAME1}.*
+	rm -f ${PREFIX}/lib/lib${LIBNAME2}.*
 	rm -f ${PREFIX}/include/logger.h

@@ -9,7 +9,7 @@ CC = gcc
 
 all:
 	make -C src
-	${CC} ${CFLAGS} select.c -o ${APPNAME} ${LDFLAGS} -lserver_sqlite3 -l sqlite3
+	${CC} ${CFLAGS} select.c -o ${APPNAME} ${LDFLAGS} -llogger -lserver_sqlite3 -l sqlite3
 
 clean:
 	rm -f ${APPNAME}
