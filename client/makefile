@@ -9,7 +9,9 @@ LIBPATH2 = `pwd`/lib/
 CFLAGS+=-I${LIBPATH1}
 LDFLAGS+=-L${LIBPATH2}
 
+
 CC = gcc
+
 
 all:
 	make -C src
