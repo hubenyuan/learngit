@@ -19,6 +19,7 @@ static_lib:
 
 clean:
 	rm -f *.o
+	rm -f *.o
 
 distclean:clean
 	rm -f *.a
