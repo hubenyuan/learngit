@@ -31,8 +31,8 @@ int get_temperature(float *temp)
     char             chip_sn[32];
     int              found = 0;
     char             ds18b20_path[64];
-    char            *ptr = NULL;
-    DIR             *dirp = NULL;
+    char            *ptr     = NULL;
+    DIR             *dirp    = NULL;
     struct dirent   *direntp = NULL;
     dirp=opendir(w1_path);
 
