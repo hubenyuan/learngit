@@ -3,10 +3,10 @@
 PREFIX = `pwd`/../
 
 
-LIBNAME1  = my_sqlite3
-LIBNAME2 = package_data
-LIBNAME3 = logger
-
+LIBNAME1 = my_sqlite3
+LIBNAME2 = time
+LIBNAME3 = temp
+LIBNAME4 = logger
 
 all: static_lib
 
@@ -15,6 +15,7 @@ static_lib:
 	ar -rcs lib${LIBNAME1}.a *.o
 	ar -rcs lib${LIBNAME2}.a *.o
 	ar -rcs lib${LIBNAME3}.a *.o
+	ar -rcs lib${LIBNAME4}.a *.o
 
 clean:
 	rm -f *.o
@@ -32,4 +33,4 @@ uninstall:
 	rm -f ${PREFIX}/lib/lib${LIBNAME1}.*
 	rm -f ${PREFIX}/lib/lib${LIBNAME2}.*
 	rm -f ${PREFIX}/lib/lib${LIBNAME3}.*
-	rm -f ${PREFIX}/include/logger.h
+	rm -f ${PREFIX}/lib/lib${LIBNAME4}.*
