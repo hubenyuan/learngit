@@ -90,6 +90,7 @@ int get_temperature(float *temp)
     return 0;
 }
 
+/* 获取温度 */
 int get_temporary(char *temp_buf)
 {
     float   temp;
