@@ -2,12 +2,12 @@
  *      Copyright:  (C) 2023 Hu Ben Yuan<2017603273@qq.com>
  *                  All rights reserved.
  *
- *       Filename:  package_data.c
+ *       Filename:  temp.c
  *    Description:  This file 
  *                 
- *        Version:  1.0.0(04/18/2023)
+ *        Version:  1.0.0(05/02/2023)
  *         Author:  Hu Ben Yuan <2017603273@qq.com>
- *      ChangeLog:  1, Release initial version on "04/18/2023 09:02:35 PM"
+ *      ChangeLog:  1, Release initial version on "05/02/2023 03:59:25 PM"
  *                 
  ********************************************************************************/
 
@@ -36,13 +36,13 @@ int get_temperature(float *temp)
     int              found=0;
     char             ds18b20_path[64];
     dirp=opendir(w1_path);
-        
+
     if(!dirp)
     {
         log_error("open folder %s failure: %s\n",w1_path,strerror(errno));
         return -1;
     }
-        
+
     while(NULL!=(direntp=readdir(dirp)))
     {
         if(strstr(direntp->d_name,"28-"))
@@ -62,7 +62,7 @@ int get_temperature(float *temp)
     strncat(w1_path,chip_sn,sizeof(w1_path)-strlen(w1_path));
     strncat(w1_path,"/w1_slave",sizeof(w1_path)-strlen(w1_path));
     fd=open(w1_path,O_RDONLY);
-        
+
     if(fd<0)
     {
         log_warn("open file failure:%s\n",strerror(errno));
@@ -79,75 +79,18 @@ int get_temperature(float *temp)
     }
     ptr=strstr(buf,"t=");
 
-	if(!ptr)
+    if(!ptr)
     {
         log_warn("can not find t=string\n");
         return -5;
     }
 
-	ptr+=2;
+    ptr+=2;
     *temp=atof(ptr)/1000;
     close(fd);
     return 0;
 }
 
-
-/*获取时间*/
-int get_time(char *time_buf)
-{
-    time_t       now;
-    struct tm   *t;
-    time(&now);
-    t = localtime(&now);
-    if(!t)
-    {
-        log_warn("obtain time failure: %s\n",strerror(errno));
-        return -1;
-    }
-
-    memset(time_buf, 0, sizeof(time_buf));
-    sprintf(time_buf, "%04d-%02d-%02d %02d:%02d:%02d",
-            t->tm_year+1900,t->tm_mon+1,t->tm_mday,
-            t->tm_hour,t->tm_min,t->tm_sec);
-    return 0;
-} 
-
-/*获取产品序列号*/
-/*
-int get_serial(char *serial_buf)
-{
-    struct dirent  *entry;
-    int             founds = 0;
-    DIR            *dirptr;
-    dirptr = opendir("../../w1/device/");
-
-    memset(serial_buf, 0, sizeof(serial_buf));
-    if( (entry = readdir(dirptr)) == NULL )
-    {
-        log_warn("open file failure: %s\n",strerror(errno));
-                return -1;
-    }
-
-    while( (entry = readdir(dirptr)) != NULL )
-    {
-        if(strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0 && strstr(entry->d_name,"28-"))
-        {
-            sprintf(serial_buf,"%s",entry->d_name);
-            founds = 1;
-        }
-                
-    }
-    if( !founds )
-    {
-        log_error("can not find ds18b20_path chipest\n");
-        return -2;
-    }
-    closedir(dirptr);
-    return 0;
-}
-*/
-
-/*获取温度*/
 int get_temporary(char *temp_buf)
 {
     float   temp;
