@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/time.h>
+#include <errno.h>
 
 #include "logger.h"
 
