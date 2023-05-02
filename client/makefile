@@ -1,4 +1,7 @@
 
+PORT     = 9987
+HOSTNAME = 192.168.68.129
+TIME     = 3
 APPNAME  = temp_cli
 LIBPATH1 = `pwd`/include/
 LIBPATH2 = `pwd`/lib/
@@ -17,4 +20,4 @@ clean:
 
 run:
 	export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:LIBPATH
-	./${APPNAME} -p 9987 -i 192.168.68.129 -t 3
+	./${APPNAME} -p ${PORT} -h ${HOSTNAME} -t ${TIME}

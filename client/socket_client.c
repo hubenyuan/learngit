@@ -24,6 +24,10 @@
 #include "package_data.h"
 #include "my_sqlite3.h"
 #include "logger.h"
+
+
+int get_serial(char *serial_buf);
+
 static inline void print_usage(char *progname)
 {
     log_error("%s usage: \n", progname);
@@ -36,36 +40,36 @@ static inline void print_usage(char *progname)
 
 int main(int argc, char **argv)
 {
-	int                 sockfd = -1;
-	int                 rv = -1;
-	struct sockaddr_in  servaddr;
-	char               *servip = NULL;
-	int                 port = 0;
-	int                 times = 3;
-	char                buf[512];
-	char                data_buff[512];
-	int                 ch;
-	int                 maxid;
-	int                 idx;
-	int                 founds = 0;
-	char                time_buf[64];
-	char                serial_buf[64];
-	char                temp_buf[64];
-	char                send_buf[128];
+	int                   sockfd = -1;
+	int                   rv = -1;
+	int                   port = 0;
+	int                   times = 3;
+	char                  buf[512];
+	char                  data_buff[512];
+	int                   ch;
+	int                   maxid;
+	int                   idx;
+	int                   founds = 0;
+	char                  serial_buf[16];
+	char                  time_buf[64];
+	char                  temp_buf[64];
+	char                  send_buf[128];
+	struct sockaddr_in    servaddr;
+	char                 *servip = NULL;
 
 	struct option       opts[] = {
-		{"ipaddr", required_argument, NULL, 'i'},
+		{"hostname", required_argument, NULL, 'h'},
 		{"port", required_argument, NULL, 'p'},
 		{"times", required_argument, NULL, 't'},
-		{"help", no_argument, NULL, 'h'},
+		{"Help", no_argument, NULL, 'H'},
 		{NULL, 0, NULL, 0}
 	};
 
-	while((ch=getopt_long(argc, argv, "i:p:t:h", opts, &idx)) != -1)
+	while((ch=getopt_long(argc, argv, "h:p:t:H", opts, &idx)) != -1)
 	{
 		switch(ch)
 		{
-			case 'i':
+			case 'h':
 				servip=optarg;
 				break;
 			case 'p':
@@ -74,7 +78,7 @@ int main(int argc, char **argv)
 			case 't':
 				times=atoi(optarg);
 				break;
-			case 'h':
+			case 'H':
 				print_usage(argv[0]);
 				return 0;
 		}
@@ -99,11 +103,13 @@ int main(int argc, char **argv)
 
 	while(1)
 	{
+		/* 创建文件描述符sockfd */
 		sockfd = socket(AF_INET, SOCK_STREAM, 0);
 		if(sockfd < 0)
 		{
 			log_error("Create socket failur %s\n", strerror(errno));
 			close(sockfd);
+			sockfd = -1;
 			return -1;
 		}
 		log_info("Create socket[%d] successfully!\n",sockfd);
@@ -125,6 +131,8 @@ int main(int argc, char **argv)
 			get_serial(serial_buf);
 
 		    sqlite_insert_data(time_buf, serial_buf, temp_buf);
+			close(sockfd);
+			sockfd = -1;
 			sleep(5);
 			continue;
 		}
@@ -191,5 +199,13 @@ int main(int argc, char **argv)
 
 	sqlite_close_db();
 	close(sockfd);
+	return 0;
+}
+
+int get_serial(char *serial_buf)
+{
+	int   n = 1;
+	memset(serial_buf, 0, sizeof(serial_buf));
+	sprintf(serial_buf, "hby%03d", n);
 	return 0;
 }
