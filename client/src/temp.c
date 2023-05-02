@@ -25,15 +25,15 @@
 
 int get_temperature(float *temp)
 {
-    int              fd=-1;
+    int              fd = -1;
     char             buf[128];
-    char            *ptr=NULL;
-    DIR             *dirp=NULL;
-    struct dirent   *direntp=NULL;
     char             w1_path[64]="../../w1/device/";
     char             chip_sn[32];
-    int              found=0;
+    int              found = 0;
     char             ds18b20_path[64];
+    char            *ptr = NULL;
+    DIR             *dirp = NULL;
+    struct dirent   *direntp = NULL;
     dirp=opendir(w1_path);
 
     if(!dirp)
